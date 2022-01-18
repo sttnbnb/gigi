@@ -7,47 +7,25 @@ import (
 	"os/signal"
 
 	"github.com/shmn7iii/discordgo"
-	// Slash Commands 使いたいが為にforkしたマン
 )
 
 var (
-	GuildID        = flag.String("guild", "", "Test guild ID. If not passed - bot registers commands globally")
 	BotToken       = flag.String("token", "", "Bot access token")
+	GuildID        = flag.String("guild", "", "Test guild ID. If not passed - bot registers commands globally")
 	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
 )
 
 var s *discordgo.Session
 
-func init() { flag.Parse() }
-
 func init() {
+	flag.Parse()
+
 	var err error
 	s, err = discordgo.New("Bot " + *BotToken)
 	if err != nil {
 		log.Fatalf("Invalid bot parameters: %v", err)
 	}
-}
 
-var (
-	commands = []*discordgo.ApplicationCommand{
-		{
-			Name:        "basic-command",
-			Description: "Basic command",
-		},
-	}
-	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
-		"basic-command": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "Hey there! Congratulations, you just executed your first slash command",
-				},
-			})
-		},
-	}
-)
-
-func init() {
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandHandlers[i.ApplicationCommandData().Name]; ok {
 			h(s, i)
@@ -57,7 +35,7 @@ func init() {
 
 func main() {
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		log.Println("Bot is up!")
+		log.Println("gigi< ohayo.")
 	})
 	err := s.Open()
 	if err != nil {
@@ -73,8 +51,23 @@ func main() {
 
 	defer s.Close()
 
+	createdCommands, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, *GuildID, commands)
+
+	if err != nil {
+		log.Fatalf("Cannot register commands: %v", err)
+	}
+
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
-	log.Println("Gracefully shutdowning")
+	log.Println("gigi< byebye.")
+
+	if *RemoveCommands {
+		for _, cmd := range createdCommands {
+			err := s.ApplicationCommandDelete(s.State.User.ID, *GuildID, cmd.ID)
+			if err != nil {
+				log.Fatalf("Cannot delete %q command: %v", cmd.Name, err)
+			}
+		}
+	}
 }
