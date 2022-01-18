@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/bwmarrin/discordgo"
-	// あれだ、SlashCommandsのコード更新されてからタグつけられてないからgetでソースが入らねえ
+	"github.com/shmn7iii/discordgo"
+	// Slash Commands 使いたいが為にforkしたマン
 )
 
 var (
