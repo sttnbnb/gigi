@@ -3,7 +3,7 @@ Discord BOT "gigi"
 
 ## spec
 
-- golang 17
+- golang 1.17.2
 - [discordgo](https://github.com/bwmarrin/discordgo)
 
 ## build and run
