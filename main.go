@@ -43,7 +43,7 @@ func init() {
 
 func main() {
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		log.Println("gigi< ohayo.")
+		log.Println("[gigi] ohayo.")
 	})
 	err := s.Open()
 	if err != nil {
@@ -68,7 +68,7 @@ func main() {
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
-	log.Println("gigi< byebye.")
+	log.Println("[gigi] byebye.")
 
 	if *RemoveCommands {
 		for _, cmd := range createdCommands {

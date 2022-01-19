@@ -105,18 +105,18 @@ var (
 
 			embed := i.Message.Embeds[0]
 
-			if strings.HasPrefix(strings.Split(i.Message.Embeds[0].Fields[0].Name, " ")[2], "@") {
+			if strings.HasPrefix(strings.Split(embed.Fields[0].Name, " ")[2], "@") {
 				// @ ari
-				members := i.Message.Embeds[0].Fields[0].Value
+				members := embed.Fields[0].Value
 				if members == "ｲﾅｲﾖ" {
 					members = ""
 				}
 
 				add := "- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
-				atto, _ := strconv.Atoi(strings.Replace(strings.Split(i.Message.Embeds[0].Fields[0].Name, " ")[2], "@", "", -1))
+				atto, _ := strconv.Atoi(strings.Replace(strings.Split(embed.Fields[0].Name, " ")[2], "@", "", -1))
 
 				if !strings.Contains(members, add) {
-					members += add
+					members += "\n" + add
 					atto -= 1
 				}
 
@@ -133,17 +133,17 @@ var (
 				}
 			} else {
 				// @ nasi
-				members := i.Message.Embeds[0].Fields[0].Value
+				members := embed.Fields[0].Value
 				if members == "ｲﾅｲﾖ" {
 					members = ""
 				}
 
-				add := "\n- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
-				atto, _ := strconv.Atoi(strings.Replace(strings.Split(i.Message.Embeds[0].Fields[0].Name, " ")[2], "人", "", -1))
+				add := "- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
+				atto, _ := strconv.Atoi(strings.Replace(strings.Split(embed.Fields[0].Name, " ")[2], "人", "", -1))
 
 				if !strings.Contains(members, add) {
-					members += add
-					atto -= 1
+					members += "\n" + add
+					atto += 1
 				}
 
 				embed.Fields = []*discordgo.MessageEmbedField{
@@ -152,6 +152,19 @@ var (
 						Value:  members,
 						Inline: false,
 					},
+				}
+			}
+
+			roleName := ""
+			if len(embed.Description) <= 9 {
+				roleName = embed.Description + "..."
+			} else {
+				roleName = embed.Description[:9] + "..."
+			}
+			roles, _ := s.GuildRoles(*GuildID)
+			for _, role := range roles {
+				if role.Name == roleName {
+					s.GuildMemberRoleAdd(*GuildID, i.Member.User.ID, role.ID)
 				}
 			}
 
@@ -170,7 +183,70 @@ var (
 		},
 		"ch_torikesi": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-			// TODO: BSIDの取得と取り消し処理
+			embed := i.Message.Embeds[0]
+
+			if strings.HasPrefix(strings.Split(i.Message.Embeds[0].Fields[0].Name, " ")[2], "@") {
+				// @ ari
+				members := i.Message.Embeds[0].Fields[0].Value
+
+				add := "- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
+				atto, _ := strconv.Atoi(strings.Replace(strings.Split(i.Message.Embeds[0].Fields[0].Name, " ")[2], "@", "", -1))
+
+				if strings.Contains(members, add) {
+					members = strings.Replace(members, add, "", -1)
+					atto += 1
+				}
+
+				if members == "" {
+					members = "ｲﾅｲﾖ"
+				}
+
+				embed.Fields = []*discordgo.MessageEmbedField{
+					{
+						Name:   fmt.Sprintf("参加者 | @%d", atto),
+						Value:  members,
+						Inline: false,
+					},
+				}
+			} else {
+				// @ nasi
+				members := i.Message.Embeds[0].Fields[0].Value
+
+				add := "- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
+				atto, _ := strconv.Atoi(strings.Replace(strings.Split(i.Message.Embeds[0].Fields[0].Name, " ")[2], "人", "", -1))
+
+				if strings.Contains(members, add) {
+					members = strings.Replace(members, add, "", -1)
+					atto -= 1
+				}
+
+				if members == "" {
+					members = "ｲﾅｲﾖ"
+				}
+
+				embed.Fields = []*discordgo.MessageEmbedField{
+					{
+						Name:   fmt.Sprintf("参加者 | %d人", atto),
+						Value:  members,
+						Inline: false,
+					},
+				}
+			}
+
+			roleName := ""
+			if len(embed.Description) <= 9 {
+				roleName = embed.Description + "..."
+			} else {
+				roleName = embed.Description[:9] + "..."
+			}
+			roles, _ := s.GuildRoles(*GuildID)
+			for _, role := range roles {
+				if role.Name == roleName {
+					s.GuildMemberRoleRemove(*GuildID, i.Member.User.ID, role.ID)
+				}
+			}
+
+			s.ChannelMessageEditEmbed(i.ChannelID, i.Message.ID, embed)
 
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -239,9 +315,7 @@ var (
 			case "sime":
 
 				// TODO: BSIDの取得と締め切り処理
-
-				// インタラクションのインタラクションからBSID
-				// i.Interaction.Message.Embeds[0].Footer
+				// 自動締め切りもあるので別で関化したほうがいいかも
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -253,6 +327,7 @@ var (
 			case "syuugou":
 
 				// TODO: BSIDの取得と集合処理
+				// roleにメンション
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -264,6 +339,7 @@ var (
 			case "mukou":
 
 				// TODO: BSIDの取得と無効化処理
+				// role削除
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -284,8 +360,9 @@ var (
 		"bosyu": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 			embed := discordgo.MessageEmbed{
-				Title: ":mega: 募集\n" + i.ApplicationCommandData().Options[0].StringValue(),
-				Color: 0x00f900,
+				Title:       ":mega: 募集",
+				Description: i.ApplicationCommandData().Options[0].StringValue(),
+				Color:       0x00f900,
 				Author: &discordgo.MessageEmbedAuthor{
 					Name:    i.Member.User.Username, // i.Messageはボタン押した時のみ、i.MemberはGuildでslash command、i.UserはDMでslash command
 					IconURL: i.Member.User.AvatarURL(""),
@@ -296,11 +373,6 @@ var (
 			}
 
 			if len(i.ApplicationCommandData().Options) >= 3 {
-				embed.Description = fmt.Sprintf(
-					"%s @%d",
-					i.ApplicationCommandData().Options[0].StringValue(),
-					i.ApplicationCommandData().Options[2].IntValue(),
-				)
 				embed.Fields = []*discordgo.MessageEmbedField{
 					{
 						Name:   fmt.Sprintf("参加者 | @%d", i.ApplicationCommandData().Options[2].IntValue()),
@@ -309,7 +381,6 @@ var (
 					},
 				}
 			} else {
-				embed.Description = i.ApplicationCommandData().Options[0].StringValue()
 				embed.Fields = []*discordgo.MessageEmbedField{
 					{
 						Name:   "参加者 | 0人",
@@ -317,6 +388,13 @@ var (
 						Inline: false,
 					},
 				}
+			}
+
+			Role, _ := s.GuildRoleCreate(*GuildID)
+			if len(i.ApplicationCommandData().Options[0].StringValue()) <= 9 {
+				s.GuildRoleEdit(*GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()+"...", 0, false, 0, true)
+			} else {
+				s.GuildRoleEdit(*GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()[:9]+"...", 0, false, 0, true)
 			}
 
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
