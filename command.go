@@ -251,7 +251,7 @@ var (
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "> 参加を申し込みました。",
+					Content: "> 参加を申し込みました :v: ",
 					Flags:   1 << 6,
 				},
 			})
@@ -329,7 +329,7 @@ var (
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "> 参加を取り消しました。",
+					Content: "> 参加を取り消しました :wave: ",
 					Flags:   1 << 6,
 				},
 			})
@@ -508,20 +508,37 @@ var (
 		},
 
 		"osiire": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			response := ""
+
 			userID := i.ApplicationCommandData().Options[0].UserValue(nil).ID
+			osiireID := ""
 			if len(i.ApplicationCommandData().Options) >= 2 {
-				*OsiireChannelID = i.ApplicationCommandData().Options[1].ChannelValue(nil).ID
+				// sitei sareteru
+				osiireID = i.ApplicationCommandData().Options[1].ChannelValue(nil).ID
+			} else {
+				// sarete nai
+				channels, _ := s.GuildChannels(i.GuildID)
+				for _, channel := range channels {
+					if channel.Name == "押し入れ" || channel.Name == "おしいれ" {
+						osiireID = channel.ID
+					}
+				}
 			}
 
 			// move
-			if *OsiireChannelID != "" {
-				s.GuildMemberMove(i.GuildID, userID, OsiireChannelID)
+			if osiireID != "" {
+				err := s.GuildMemberMove(i.GuildID, userID, &osiireID)
+				if err != nil {
+					response = "> 押し入れ閉まってた :pensive: "
+				} else {
+					response = fmt.Sprintf("> <@%s> を押し入れに入れました :thumbsup:", userID)
+				}
 			}
 
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: fmt.Sprintf("> <@%s> を押し入れに入れました :thumbsup:", userID),
+					Content: response,
 					Flags:   1 << 6,
 				},
 			})

@@ -10,10 +10,9 @@ import (
 )
 
 var (
-	BotToken        = flag.String("token", "", "Bot access token")
-	GuildID         = flag.String("guild", "", "Test guild ID. If not passed - bot registers commands globally")
-	OsiireChannelID = flag.String("osiire-channel", "", "Channel ID of Osiire channel")
-	RemoveCommands  = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
+	BotToken       = flag.String("token", "", "Bot access token")
+	GuildID        = flag.String("guild", "", "Test guild ID. If not passed - bot registers commands globally")
+	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
 )
 
 var s *discordgo.Session
