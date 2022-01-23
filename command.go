@@ -438,7 +438,7 @@ var (
 				Description: i.ApplicationCommandData().Options[0].StringValue(),
 				Color:       0x00f900,
 				Author: &discordgo.MessageEmbedAuthor{
-					Name:    i.Member.User.Username, // i.Messageはボタン押した時のみ、i.MemberはGuildでslash command、i.UserはDMでslash command
+					Name:    i.Member.User.Username,
 					IconURL: i.Member.User.AvatarURL(""),
 				},
 				Footer: &discordgo.MessageEmbedFooter{
@@ -506,25 +506,23 @@ var (
 				panic(err)
 			}
 		},
+
 		"osiire": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			margs := []interface{}{
-				i.ApplicationCommandData().Options[0].UserValue(nil).ID,
-			}
-			msgformat :=
-				` Now you just learned how to use command options. Take a look to the value of which you've just entered:
-				> user-option: <@%s>
-`
+			userID := i.ApplicationCommandData().Options[0].UserValue(nil).ID
 			if len(i.ApplicationCommandData().Options) >= 2 {
-				margs = append(margs, i.ApplicationCommandData().Options[1].ChannelValue(nil).ID)
-				msgformat += "> channel-option: <#%s>\n"
+				*OsiireChannelID = i.ApplicationCommandData().Options[1].ChannelValue(nil).ID
 			}
+
+			// move
+			if *OsiireChannelID != "" {
+				s.GuildMemberMove(*GuildID, userID, OsiireChannelID)
+			}
+
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: fmt.Sprintf(
-						msgformat,
-						margs...,
-					),
+					Content: fmt.Sprintf("> <@%s> を押し入れに入れました :thumbsup:", userID),
+					Flags:   1 << 6,
 				},
 			})
 		},
