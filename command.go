@@ -8,6 +8,77 @@ import (
 	"github.com/shmn7iii/discordgo"
 )
 
+func syuugou(s *discordgo.Session, channelID string, messageID string) {
+	message, _ := s.ChannelMessage(channelID, messageID)
+	desc := message.Embeds[0].Description
+	roleName := ""
+	if len(desc) <= 9 {
+		roleName = desc + "..."
+	} else {
+		roleName = desc[:9] + "..."
+	}
+	roles, _ := s.GuildRoles(*GuildID)
+	for _, role := range roles {
+		if role.Name == roleName {
+			s.ChannelMessageSend(channelID, role.Mention()+" 集合！！！！！")
+		}
+	}
+}
+
+func sime(s *discordgo.Session, channelID string, messageID string) {
+	message, _ := s.ChannelMessage(channelID, messageID)
+	embed := message.Embeds[0]
+	embed.Fields = []*discordgo.MessageEmbedField{
+		{
+			Name:   "参加者 | 〆!!",
+			Value:  embed.Fields[0].Value,
+			Inline: false,
+		},
+	}
+	embed.Color = 0xff2600
+
+	str := ""
+	s.ChannelMessageEditComplex(&discordgo.MessageEdit{
+		ID:      messageID,
+		Channel: channelID,
+		Content: &str,
+		Embeds:  []*discordgo.MessageEmbed{embed},
+		Components: []discordgo.MessageComponent{
+			discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{
+					discordgo.Button{
+						Label:    "管理",
+						Style:    discordgo.SecondaryButton,
+						Disabled: false,
+						CustomID: "ch_kanri",
+					},
+				},
+			},
+		},
+	})
+}
+
+func mukou(s *discordgo.Session, channelID string, messageID string) {
+	// sime
+	sime(s, channelID, messageID)
+
+	// delete role
+	message, _ := s.ChannelMessage(channelID, messageID)
+	desc := message.Embeds[0].Description
+	roleName := ""
+	if len(desc) <= 9 {
+		roleName = desc + "..."
+	} else {
+		roleName = desc[:9] + "..."
+	}
+	roles, _ := s.GuildRoles(*GuildID)
+	for _, role := range roles {
+		if role.Name == roleName {
+			s.GuildRoleDelete(*GuildID, role.ID)
+		}
+	}
+}
+
 var (
 	commands = []*discordgo.ApplicationCommand{
 		{
@@ -103,6 +174,7 @@ var (
 		},
 		"ch_sanka": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
+			simed := false
 			embed := i.Message.Embeds[0]
 
 			if strings.HasPrefix(strings.Split(embed.Fields[0].Name, " ")[2], "@") {
@@ -128,9 +200,11 @@ var (
 					},
 				}
 
+				// sime
 				if atto == 0 {
-					// TODO: sime
+					simed = true
 				}
+
 			} else {
 				// @ nasi
 				members := embed.Fields[0].Value
@@ -169,6 +243,10 @@ var (
 			}
 
 			s.ChannelMessageEditEmbed(i.ChannelID, i.Message.ID, embed)
+
+			if simed {
+				sime(s, i.Message.ChannelID, i.Message.ID)
+			}
 
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -259,11 +337,12 @@ var (
 				panic(err)
 			}
 		},
+
 		"ch_kanri": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "> 操作を選択してください。",
+					Content: "> 操作を選択してください。\n> `ID: " + i.Message.ID + "`",
 					Flags:   1 << 6,
 					Components: []discordgo.MessageComponent{
 						discordgo.ActionsRow{
@@ -309,13 +388,12 @@ var (
 		},
 		"ch_select": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			var response *discordgo.InteractionResponse
-
 			data := i.MessageComponentData()
+			messageID := i.Message.Content[46:64]
+
 			switch data.Values[0] {
 			case "sime":
-
-				// TODO: BSIDの取得と締め切り処理
-				// 自動締め切りもあるので別で関化したほうがいいかも
+				sime(s, i.Message.ChannelID, messageID)
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -325,9 +403,7 @@ var (
 					},
 				}
 			case "syuugou":
-
-				// TODO: BSIDの取得と集合処理
-				// roleにメンション
+				syuugou(s, i.Message.ChannelID, messageID)
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -337,9 +413,7 @@ var (
 					},
 				}
 			case "mukou":
-
-				// TODO: BSIDの取得と無効化処理
-				// role削除
+				mukou(s, i.Message.ChannelID, messageID)
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -418,7 +492,7 @@ var (
 									CustomID: "ch_sousin",
 								},
 								discordgo.Button{
-									Label:    "「送信」ボタンでこのチャンネルへ送信できます",
+									Label:    "「送信」でチャンネルへ送信",
 									Style:    discordgo.SecondaryButton,
 									Disabled: true,
 									CustomID: "ch_dummy",
