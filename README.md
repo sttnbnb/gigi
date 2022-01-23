@@ -1,20 +1,15 @@
-# gigi
-Discord BOT "gigi"
-
 ## spec
 
 - golang 1.17.2
 - [discordgo](https://github.com/bwmarrin/discordgo)
 
-## build and run
-
-### build
+## build
 
 ```bash
 go build
 ```
 
-### run
+## run
 
 ```bash
 ./gigi -token <token> [-guild <guild_id>]
