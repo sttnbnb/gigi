@@ -8,7 +8,7 @@ import (
 	"github.com/shmn7iii/discordgo"
 )
 
-func syuugou(s *discordgo.Session, channelID string, messageID string) {
+func syuugou(s *discordgo.Session, guildID string, channelID string, messageID string) {
 	message, _ := s.ChannelMessage(channelID, messageID)
 	desc := message.Embeds[0].Description
 	roleName := ""
@@ -17,7 +17,7 @@ func syuugou(s *discordgo.Session, channelID string, messageID string) {
 	} else {
 		roleName = desc[:9] + "..."
 	}
-	roles, _ := s.GuildRoles(*GuildID)
+	roles, _ := s.GuildRoles(guildID)
 	for _, role := range roles {
 		if role.Name == roleName {
 			s.ChannelMessageSend(channelID, role.Mention()+" 集合！！！！！")
@@ -25,7 +25,7 @@ func syuugou(s *discordgo.Session, channelID string, messageID string) {
 	}
 }
 
-func sime(s *discordgo.Session, channelID string, messageID string) {
+func sime(s *discordgo.Session, guildID string, channelID string, messageID string) {
 	message, _ := s.ChannelMessage(channelID, messageID)
 	embed := message.Embeds[0]
 	embed.Fields = []*discordgo.MessageEmbedField{
@@ -58,9 +58,9 @@ func sime(s *discordgo.Session, channelID string, messageID string) {
 	})
 }
 
-func mukou(s *discordgo.Session, channelID string, messageID string) {
+func mukou(s *discordgo.Session, guildID string, channelID string, messageID string) {
 	// sime
-	sime(s, channelID, messageID)
+	sime(s, guildID, channelID, messageID)
 
 	// delete role
 	message, _ := s.ChannelMessage(channelID, messageID)
@@ -71,10 +71,10 @@ func mukou(s *discordgo.Session, channelID string, messageID string) {
 	} else {
 		roleName = desc[:9] + "..."
 	}
-	roles, _ := s.GuildRoles(*GuildID)
+	roles, _ := s.GuildRoles(guildID)
 	for _, role := range roles {
 		if role.Name == roleName {
-			s.GuildRoleDelete(*GuildID, role.ID)
+			s.GuildRoleDelete(guildID, role.ID)
 		}
 	}
 }
@@ -235,17 +235,17 @@ var (
 			} else {
 				roleName = embed.Description[:9] + "..."
 			}
-			roles, _ := s.GuildRoles(*GuildID)
+			roles, _ := s.GuildRoles(i.GuildID)
 			for _, role := range roles {
 				if role.Name == roleName {
-					s.GuildMemberRoleAdd(*GuildID, i.Member.User.ID, role.ID)
+					s.GuildMemberRoleAdd(i.GuildID, i.Member.User.ID, role.ID)
 				}
 			}
 
 			s.ChannelMessageEditEmbed(i.ChannelID, i.Message.ID, embed)
 
 			if simed {
-				sime(s, i.Message.ChannelID, i.Message.ID)
+				sime(s, i.GuildID, i.Message.ChannelID, i.Message.ID)
 			}
 
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -317,10 +317,10 @@ var (
 			} else {
 				roleName = embed.Description[:9] + "..."
 			}
-			roles, _ := s.GuildRoles(*GuildID)
+			roles, _ := s.GuildRoles(i.GuildID)
 			for _, role := range roles {
 				if role.Name == roleName {
-					s.GuildMemberRoleRemove(*GuildID, i.Member.User.ID, role.ID)
+					s.GuildMemberRoleRemove(i.GuildID, i.Member.User.ID, role.ID)
 				}
 			}
 
@@ -393,7 +393,7 @@ var (
 
 			switch data.Values[0] {
 			case "sime":
-				sime(s, i.Message.ChannelID, messageID)
+				sime(s, i.GuildID, i.Message.ChannelID, messageID)
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -403,7 +403,7 @@ var (
 					},
 				}
 			case "syuugou":
-				syuugou(s, i.Message.ChannelID, messageID)
+				syuugou(s, i.GuildID, i.Message.ChannelID, messageID)
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -413,7 +413,7 @@ var (
 					},
 				}
 			case "mukou":
-				mukou(s, i.Message.ChannelID, messageID)
+				mukou(s, i.GuildID, i.Message.ChannelID, messageID)
 
 				response = &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -464,11 +464,11 @@ var (
 				}
 			}
 
-			Role, _ := s.GuildRoleCreate(*GuildID)
+			Role, _ := s.GuildRoleCreate(i.GuildID)
 			if len(i.ApplicationCommandData().Options[0].StringValue()) <= 9 {
-				s.GuildRoleEdit(*GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()+"...", 0, false, 0, true)
+				s.GuildRoleEdit(i.GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()+"...", 0, false, 0, true)
 			} else {
-				s.GuildRoleEdit(*GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()[:9]+"...", 0, false, 0, true)
+				s.GuildRoleEdit(i.GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()[:9]+"...", 0, false, 0, true)
 			}
 
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -515,7 +515,7 @@ var (
 
 			// move
 			if *OsiireChannelID != "" {
-				s.GuildMemberMove(*GuildID, userID, OsiireChannelID)
+				s.GuildMemberMove(i.GuildID, userID, OsiireChannelID)
 			}
 
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
