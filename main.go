@@ -10,9 +10,11 @@ import (
 )
 
 var (
-	BotToken       = flag.String("token", "", "Bot access token")
-	GuildID        = flag.String("guild", "", "Test guild ID. If not passed - bot registers commands globally")
-	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
+	BotToken        = flag.String("token", "", "Bot access token")
+	GuildID         = flag.String("guild", "", "Test guild ID. If not passed - bot registers commands globally")
+	ReadmeMessageID = flag.String("readme-message-id", "", "ID of readme message")
+	ReadmeRoleID    = flag.String("readme-role-id", "", "ID of readme role")
+	RemoveCommands  = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
 )
 
 var s *discordgo.Session
@@ -33,12 +35,14 @@ func init() {
 				h(s, i)
 			}
 		case discordgo.InteractionMessageComponent:
-
 			if h, ok := componentsHandlers[i.MessageComponentData().CustomID]; ok {
 				h(s, i)
 			}
 		}
 	})
+
+	s.AddHandler(messageReactionAddEvent)
+	s.AddHandler(messageReactionRemoveEvent)
 }
 
 func main() {

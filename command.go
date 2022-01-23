@@ -98,10 +98,11 @@ var (
 					Required:    true,
 				},
 				{
-					Type:        discordgo.ApplicationCommandOptionInteger,
-					Name:        "atto",
-					Description: "募集人数",
-					Required:    false,
+					Type:         discordgo.ApplicationCommandOptionInteger,
+					Name:         "atto",
+					Description:  "募集人数",
+					Required:     false,
+					Autocomplete: false,
 				},
 			},
 		},
@@ -120,7 +121,6 @@ var (
 					Name:        "channel",
 					Description: "行き先",
 					ChannelTypes: []discordgo.ChannelType{
-						discordgo.ChannelTypeGuildText,
 						discordgo.ChannelTypeGuildVoice,
 					},
 					Required: false,
@@ -545,3 +545,27 @@ var (
 		},
 	}
 )
+
+func messageReactionAddEvent(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
+	if m.MessageID == *ReadmeMessageID {
+		switch m.Emoji.Name {
+		case "⭕":
+			s.GuildMemberRoleAdd(m.GuildID, m.UserID, *ReadmeRoleID)
+		case "❌":
+			s.MessageReactionRemove(m.ChannelID, m.MessageID, "❌", m.UserID)
+			channel, _ := s.UserChannelCreate(m.UserID)
+			invite, _ := s.ChannelInviteCreate(m.ChannelID, discordgo.Invite{})
+			s.ChannelMessageSend(channel.ID, "マジで押すことないやん :sweat_smile: \n https://discord.gg/"+invite.Code)
+			s.GuildMemberDelete(m.GuildID, m.UserID)
+
+		}
+	}
+}
+
+func messageReactionRemoveEvent(s *discordgo.Session, m *discordgo.MessageReactionRemove) {
+	if m.MessageID == *ReadmeMessageID {
+		if m.Emoji.Name == "⭕" {
+			s.GuildMemberRoleRemove(m.GuildID, m.UserID, *ReadmeRoleID)
+		}
+	}
+}
