@@ -1,1 +1,1 @@
-web: bin/gigi -token xxx
+main: bin/gigi -token xxx
