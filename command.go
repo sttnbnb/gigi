@@ -539,7 +539,6 @@ var (
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: response,
-					Flags:   1 << 6,
 				},
 			})
 		},
