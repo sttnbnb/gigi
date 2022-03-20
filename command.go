@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/shmn7iii/discordgo"
+	"github.com/bwmarrin/discordgo"
 )
 
 func syuugou(s *discordgo.Session, guildID string, channelID string, messageID string) {

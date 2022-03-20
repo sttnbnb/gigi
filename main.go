@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/shmn7iii/discordgo"
+	"github.com/bwmarrin/discordgo"
 )
 
 var (
