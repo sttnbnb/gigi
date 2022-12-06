@@ -1,21 +1,31 @@
-## spec
+# gigi
 
-- golang 1.17.2
-- [discordgo](https://github.com/bwmarrin/discordgo)
+## Specification
 
-## build
+- Go 1.17
 
-```bash
-go build
-```
-
-## run
+## Setup
 
 ```bash
-./gigi -token <token> [-guild <guild_id>]
-```
-If you want to enable Guild Command, you need -guild option.
+# Install make, docker and write .env
+$ bash script/setup.sh
 
-## 参考
-https://github.com/bwmarrin/discordgo/blob/master/examples/slash_commands/main.go
-https://github.com/bwmarrin/discordgo/blob/master/examples/components/main.go
+# create docker container
+$ make docker/run
+```
+
+## Make commands
+
+```bash
+# start container
+$ make docker/start
+
+# stop container
+$ make docker/stop
+
+# remove container
+$ make docker/rm
+
+# view logs
+$ make docker/logs
+```

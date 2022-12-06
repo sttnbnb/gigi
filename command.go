@@ -546,10 +546,10 @@ var (
 )
 
 func messageReactionAddEvent(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
-	if m.MessageID == *ReadmeMessageID {
+	if m.MessageID == ReadmeMessageID {
 		switch m.Emoji.Name {
 		case "⭕":
-			s.GuildMemberRoleAdd(m.GuildID, m.UserID, *ReadmeRoleID)
+			s.GuildMemberRoleAdd(m.GuildID, m.UserID, ReadmeRoleID)
 		case "❌":
 			s.MessageReactionRemove(m.ChannelID, m.MessageID, "❌", m.UserID)
 			channel, _ := s.UserChannelCreate(m.UserID)
@@ -562,9 +562,9 @@ func messageReactionAddEvent(s *discordgo.Session, m *discordgo.MessageReactionA
 }
 
 func messageReactionRemoveEvent(s *discordgo.Session, m *discordgo.MessageReactionRemove) {
-	if m.MessageID == *ReadmeMessageID {
+	if m.MessageID == ReadmeMessageID {
 		if m.Emoji.Name == "⭕" {
-			s.GuildMemberRoleRemove(m.GuildID, m.UserID, *ReadmeRoleID)
+			s.GuildMemberRoleRemove(m.GuildID, m.UserID, ReadmeRoleID)
 		}
 	}
 }
