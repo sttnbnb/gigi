@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/shmn7iii/gigi/internal/bosyu"
+	"github.com/shmn7iii/gigi/internal/eula"
 	"github.com/shmn7iii/gigi/internal/osiire"
 
 	"github.com/bwmarrin/discordgo"
@@ -17,6 +18,7 @@ var s *discordgo.Session
 func composeCommands() (commands []*discordgo.ApplicationCommand) {
 	commands = append(commands, bosyu.GetCommandsArray()...)
 	commands = append(commands, osiire.GetCommandsArray()...)
+	commands = append(commands, eula.GetCommandsArray()...)
 
 	return
 }
@@ -24,12 +26,14 @@ func composeCommands() (commands []*discordgo.ApplicationCommand) {
 func composeCommandHandlers() (commandHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	mergo.Merge(&commandHandlers, bosyu.GetCommandHandlersMap())
 	mergo.Merge(&commandHandlers, osiire.GetCommandHandlersMap())
+	mergo.Merge(&commandHandlers, eula.GetCommandHandlersMap())
 
 	return
 }
 
 func composeComponentHandlers() (componentsHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	mergo.Merge(&componentsHandlers, bosyu.GetComponentHandlersMap())
+	mergo.Merge(&componentsHandlers, eula.GetComponentHandlersMap())
 
 	return
 }
