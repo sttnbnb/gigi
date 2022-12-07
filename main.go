@@ -1,31 +1,50 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"os"
 	"os/signal"
 
-	"github.com/bwmarrin/discordgo"
-)
+	"github.com/shmn7iii/gigi/internal/bosyu"
+	"github.com/shmn7iii/gigi/internal/osiire"
 
-var (
-	BotToken        = os.Getenv("BOT_TOKEN")
-	GuildID         = os.Getenv("GUILD_ID")
-	ReadmeMessageID = os.Getenv("README_MESSAGE_ID")
-	ReadmeRoleID    = os.Getenv("README_ROLE_ID")
+	"github.com/bwmarrin/discordgo"
+	"github.com/imdario/mergo"
 )
 
 var s *discordgo.Session
 
-func init() {
-	flag.Parse()
+func composeCommands() (commands []*discordgo.ApplicationCommand) {
+	commands = append(commands, bosyu.GetCommandsArray()...)
+	commands = append(commands, osiire.GetCommandsArray()...)
 
+	return
+}
+
+func composeCommandHandlers() (commandHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	mergo.Merge(&commandHandlers, bosyu.GetCommandHandlersMap())
+	mergo.Merge(&commandHandlers, osiire.GetCommandHandlersMap())
+
+	return
+}
+
+func composeComponentHandlers() (componentsHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	mergo.Merge(&componentsHandlers, bosyu.GetComponentHandlersMap())
+
+	return
+}
+
+func init() {
 	var err error
-	s, err = discordgo.New("Bot " + BotToken)
+	s, err = discordgo.New("Bot " + os.Getenv("BOT_TOKEN"))
 	if err != nil {
 		log.Fatalf("Invalid bot parameters: %v", err)
 	}
+}
+
+func main() {
+	var commandHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) = composeCommandHandlers()
+	var componentsHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) = composeComponentHandlers()
 
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		switch i.Type {
@@ -40,43 +59,37 @@ func init() {
 		}
 	})
 
-	s.AddHandler(messageReactionAddEvent)
-	s.AddHandler(messageReactionRemoveEvent)
-}
-
-func main() {
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("[gigi] ohayo.")
 	})
+
 	err := s.Open()
 	if err != nil {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 
-	for _, v := range commands {
-		_, err := s.ApplicationCommandCreate(s.State.User.ID, GuildID, v)
+	commands := composeCommands()
+	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands))
+	for i, v := range commands {
+		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, "", v)
 		if err != nil {
 			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
 		}
+		registeredCommands[i] = cmd
 	}
 
 	defer s.Close()
 
-	createdCommands, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, GuildID, commands)
-
-	if err != nil {
-		log.Fatalf("Cannot register commands: %v", err)
-	}
-
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
-	log.Println("[gigi] byebye.")
 
-	for _, cmd := range createdCommands {
-		err := s.ApplicationCommandDelete(s.State.User.ID, GuildID, cmd.ID)
+	for _, cmd := range registeredCommands {
+		err := s.ApplicationCommandDelete(s.State.User.ID, "", cmd.ID)
 		if err != nil {
 			log.Fatalf("Cannot delete %q command: %v", cmd.Name, err)
 		}
 	}
+
+	log.Println("[gigi] byebye.")
 }

@@ -1,0 +1,91 @@
+package bosyu
+
+import (
+	"fmt"
+
+	"github.com/bwmarrin/discordgo"
+)
+
+func GetCommandHandlersMap() (commandHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
+		"bosyu": c_bosyu,
+	}
+
+	return
+}
+
+func c_bosyu(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	embed := discordgo.MessageEmbed{
+		Title:       ":mega: 募集",
+		Description: i.ApplicationCommandData().Options[0].StringValue(),
+		Color:       0x00f900,
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    i.Member.User.Username,
+			IconURL: i.Member.User.AvatarURL(""),
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: "BSID: " + i.ID,
+		},
+	}
+
+	if len(i.ApplicationCommandData().Options) >= 3 {
+		embed.Fields = []*discordgo.MessageEmbedField{
+			{
+				Name:   fmt.Sprintf("参加者 | @%d", i.ApplicationCommandData().Options[2].IntValue()),
+				Value:  "ｲﾅｲﾖ",
+				Inline: false,
+			},
+		}
+	} else {
+		embed.Fields = []*discordgo.MessageEmbedField{
+			{
+				Name:   "参加者 | 0人",
+				Value:  "ｲﾅｲﾖ",
+				Inline: false,
+			},
+		}
+	}
+
+	Role, _ := s.GuildRoleCreate(i.GuildID)
+	if len(i.ApplicationCommandData().Options[0].StringValue()) <= 9 {
+		s.GuildRoleEdit(i.GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()+"...", 0, false, 0, true)
+	} else {
+		s.GuildRoleEdit(i.GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()[:9]+"...", 0, false, 0, true)
+	}
+
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				&embed,
+			},
+			Content: fmt.Sprintf(
+				"<@&%s>",
+				i.ApplicationCommandData().Options[1].RoleValue(nil, "").ID,
+			),
+			Flags: 1 << 6,
+			Components: []discordgo.MessageComponent{
+				discordgo.ActionsRow{
+					Components: []discordgo.MessageComponent{
+						discordgo.Button{
+							Label:    "送信",
+							Style:    discordgo.SuccessButton,
+							Disabled: false,
+							CustomID: "ch_sousin",
+						},
+						discordgo.Button{
+							Label:    "「送信」でチャンネルへ送信",
+							Style:    discordgo.SecondaryButton,
+							Disabled: true,
+							CustomID: "ch_dummy",
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+}
