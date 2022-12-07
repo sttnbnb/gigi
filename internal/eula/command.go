@@ -14,6 +14,18 @@ func GetCommandsArray() (commands []*discordgo.ApplicationCommand) {
 					Description: "EULA生成元メッセージID",
 					Required:    true,
 				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "agree_label",
+					Description: "同意ボタンラベル",
+					Required:    true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "disagree_label",
+					Description: "拒否ボタンラベル",
+					Required:    true,
+				},
 			},
 		},
 	}
