@@ -2,6 +2,7 @@ package bosyu
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -86,6 +87,6 @@ func c_bosyu(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }

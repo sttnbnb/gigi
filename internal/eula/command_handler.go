@@ -1,6 +1,8 @@
 package eula
 
 import (
+	"log"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -58,6 +60,6 @@ func c_generateeula(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }

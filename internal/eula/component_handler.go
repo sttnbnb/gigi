@@ -1,6 +1,7 @@
 package eula
 
 import (
+	"log"
 	"os"
 
 	"github.com/bwmarrin/discordgo"
@@ -28,7 +29,7 @@ func ch_agree(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }
 
@@ -47,6 +48,6 @@ func ch_disagree(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }

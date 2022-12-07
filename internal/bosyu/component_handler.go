@@ -42,7 +42,7 @@ func sime(s *discordgo.Session, guildID string, channelID string, messageID stri
 	message, err := s.ChannelMessage(channelID, messageID)
 	if err != nil {
 		log.Println(messageID)
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 
 	embed := message.Embeds[0]
@@ -136,7 +136,7 @@ func ch_sousin(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }
 
@@ -224,7 +224,7 @@ func ch_sanka(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }
 
@@ -303,7 +303,7 @@ func ch_torikesi(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }
 
@@ -352,7 +352,7 @@ func ch_kanri(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }
 
@@ -395,6 +395,6 @@ func ch_select(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	err := s.InteractionRespond(i.Interaction, response)
 	if err != nil {
-		panic(err)
+		log.Printf("Critical error occurred: %v", err)
 	}
 }
