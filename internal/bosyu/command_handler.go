@@ -48,14 +48,30 @@ func c_bosyu(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	Role, _ := s.GuildRoleCreate(i.GuildID)
+	var (
+		name        string
+		color       int   = 0
+		hoist       bool  = false
+		permission  int64 = 0
+		mentionable bool  = true
+	)
 	if len(i.ApplicationCommandData().Options[0].StringValue()) <= 9 {
-		s.GuildRoleEdit(i.GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()+"...", 0, false, 0, true)
+		name = i.ApplicationCommandData().Options[0].StringValue() + "..."
 	} else {
-		s.GuildRoleEdit(i.GuildID, Role.ID, i.ApplicationCommandData().Options[0].StringValue()[:9]+"...", 0, false, 0, true)
+		name = i.ApplicationCommandData().Options[0].StringValue()[:9] + "..."
+	}
+	_, err := s.GuildRoleCreate(i.GuildID, &discordgo.RoleParams{
+		Name:        name,
+		Color:       &color,
+		Hoist:       &hoist,
+		Permissions: &permission,
+		Mentionable: &mentionable,
+	})
+	if err != nil {
+		log.Printf("Can't create role: %v", name)
 	}
 
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{
