@@ -3,10 +3,13 @@ package bosyu
 import "github.com/bwmarrin/discordgo"
 
 func GetCommandsArray() (commands []*discordgo.ApplicationCommand) {
+	var permissionAdministrator int64 = discordgo.PermissionAdministrator
+
 	commands = []*discordgo.ApplicationCommand{
 		{
-			Name:        "bosyu",
-			Description: "募集コマンド",
+			Name:                     "bosyu",
+			Description:              "募集コマンド",
+			DefaultMemberPermissions: &permissionAdministrator,
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionString,

@@ -308,49 +308,62 @@ func ch_torikesi(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func ch_kanri(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "> 操作を選択してください。\n> `ID: " + i.Message.ID + "`",
-			Flags:   1 << 6,
-			Components: []discordgo.MessageComponent{
-				discordgo.ActionsRow{
-					Components: []discordgo.MessageComponent{
-						discordgo.SelectMenu{
-							CustomID:    "ch_select",
-							Placeholder: "Choose Action 👇",
-							Options: []discordgo.SelectMenuOption{
-								{
-									Label: "〆",
-									Value: "sime",
-									Emoji: discordgo.ComponentEmoji{
-										Name: "🚦",
+	var err error
+
+	if i.Member.Permissions == 4398046511103 {
+		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "> 操作を選択してください。\n> `ID: " + i.Message.ID + "`",
+				Flags:   1 << 6,
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.SelectMenu{
+								CustomID:    "ch_select",
+								Placeholder: "Choose Action 👇",
+								Options: []discordgo.SelectMenuOption{
+									{
+										Label: "〆",
+										Value: "sime",
+										Emoji: discordgo.ComponentEmoji{
+											Name: "🚦",
+										},
+										Description: "募集を締め切ります。",
 									},
-									Description: "募集を締め切ります。",
-								},
-								{
-									Label: "集合",
-									Value: "syuugou",
-									Emoji: discordgo.ComponentEmoji{
-										Name: "🛎",
+									{
+										Label: "集合",
+										Value: "syuugou",
+										Emoji: discordgo.ComponentEmoji{
+											Name: "🛎",
+										},
+										Description: "専用ロールで集合をかけます。",
 									},
-									Description: "専用ロールで集合をかけます。",
-								},
-								{
-									Label: "無効化",
-									Value: "mukou",
-									Emoji: discordgo.ComponentEmoji{
-										Name: "🗑",
+									{
+										Label: "無効化",
+										Value: "mukou",
+										Emoji: discordgo.ComponentEmoji{
+											Name: "🗑",
+										},
+										Description: "募集を無効化します。",
 									},
-									Description: "募集を無効化します。",
 								},
 							},
 						},
 					},
 				},
 			},
-		},
-	})
+		})
+	} else {
+		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "> 権限がありません。",
+				Flags:   1 << 6,
+			},
+		})
+	}
+
 	if err != nil {
 		log.Printf("Critical error occurred: %v", err)
 	}
