@@ -59,7 +59,7 @@ func c_bosyu(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if len(embedDescription) <= 9 {
 		name = string(embedDescription) + "..."
 	} else {
-		name = string(embedDescription)[:9] + "..."
+		name = string(embedDescription[:9]) + "..."
 	}
 	_, err := s.GuildRoleCreate(i.GuildID, &discordgo.RoleParams{
 		Name:        name,
