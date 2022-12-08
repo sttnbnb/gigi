@@ -23,12 +23,12 @@ func GetComponentHandlersMap() (componentsHandlers map[string]func(s *discordgo.
 
 func syuugou(s *discordgo.Session, guildID string, channelID string, messageID string) {
 	message, _ := s.ChannelMessage(channelID, messageID)
-	desc := message.Embeds[0].Description
+	embedDescription := []rune(message.Embeds[0].Description)
 	roleName := ""
-	if len(desc) <= 9 {
-		roleName = desc + "..."
+	if len(embedDescription) <= 9 {
+		roleName = string(embedDescription) + "..."
 	} else {
-		roleName = desc[:9] + "..."
+		roleName = string(embedDescription[:9]) + "..."
 	}
 	roles, _ := s.GuildRoles(guildID)
 	for _, role := range roles {
@@ -82,12 +82,12 @@ func mukou(s *discordgo.Session, guildID string, channelID string, messageID str
 
 	// delete role
 	message, _ := s.ChannelMessage(channelID, messageID)
-	desc := message.Embeds[0].Description
+	embedDescription := []rune(message.Embeds[0].Description)
 	roleName := ""
-	if len(desc) <= 9 {
-		roleName = desc + "..."
+	if len(embedDescription) <= 9 {
+		roleName = string(embedDescription) + "..."
 	} else {
-		roleName = desc[:9] + "..."
+		roleName = string(embedDescription[:9]) + "..."
 	}
 	roles, _ := s.GuildRoles(guildID)
 	for _, role := range roles {
@@ -197,11 +197,12 @@ func ch_sanka(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
+	embedDescription := []rune(embed.Description)
 	roleName := ""
-	if len(embed.Description) <= 9 {
-		roleName = embed.Description + "..."
+	if len(embedDescription) <= 9 {
+		roleName = string(embedDescription) + "..."
 	} else {
-		roleName = embed.Description[:9] + "..."
+		roleName = string(embedDescription[:9]) + "..."
 	}
 	roles, _ := s.GuildRoles(i.GuildID)
 	for _, role := range roles {
@@ -280,11 +281,12 @@ func ch_torikesi(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
+	embedDescription := []rune(embed.Description)
 	roleName := ""
-	if len(embed.Description) <= 9 {
-		roleName = embed.Description + "..."
+	if len(embedDescription) <= 9 {
+		roleName = string(embedDescription) + "..."
 	} else {
-		roleName = embed.Description[:9] + "..."
+		roleName = string(embedDescription[:9]) + "..."
 	}
 	roles, _ := s.GuildRoles(i.GuildID)
 	for _, role := range roles {
