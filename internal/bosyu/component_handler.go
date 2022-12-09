@@ -21,83 +21,63 @@ func GetComponentHandlersMap() (componentsHandlers map[string]func(s *discordgo.
 	return
 }
 
-func syuugou(s *discordgo.Session, guildID string, channelID string, messageID string) {
-	message, _ := s.ChannelMessage(channelID, messageID)
-	embedDescription := []rune(message.Embeds[0].Description)
-	roleName := ""
-	if len(embedDescription) <= 9 {
-		roleName = string(embedDescription) + "..."
-	} else {
-		roleName = string(embedDescription[:9]) + "..."
-	}
-	roles, _ := s.GuildRoles(guildID)
-	for _, role := range roles {
-		if role.Name == roleName {
-			s.ChannelMessageSend(channelID, role.Mention()+" 集合！！！！！")
-		}
-	}
-}
+func ch_sousin(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	response := sousin(s, i)
 
-func sime(s *discordgo.Session, guildID string, channelID string, messageID string) {
-	message, err := s.ChannelMessage(channelID, messageID)
+	err := s.InteractionRespond(i.Interaction, response)
 	if err != nil {
-		log.Println(messageID)
 		log.Printf("Critical error occurred: %v", err)
 	}
-
-	embed := message.Embeds[0]
-	embed.Fields = []*discordgo.MessageEmbedField{
-		{
-			Name:   "参加者 | 〆!!",
-			Value:  embed.Fields[0].Value,
-			Inline: false,
-		},
-	}
-	embed.Color = 0xff2600
-
-	str := ""
-	s.ChannelMessageEditComplex(&discordgo.MessageEdit{
-		ID:      messageID,
-		Channel: channelID,
-		Content: &str,
-		Embeds:  []*discordgo.MessageEmbed{embed},
-		Components: []discordgo.MessageComponent{
-			discordgo.ActionsRow{
-				Components: []discordgo.MessageComponent{
-					discordgo.Button{
-						Label:    "管理",
-						Style:    discordgo.SecondaryButton,
-						Disabled: false,
-						CustomID: "ch_kanri",
-					},
-				},
-			},
-		},
-	})
 }
 
-func mukou(s *discordgo.Session, guildID string, channelID string, messageID string) {
-	// sime
-	sime(s, guildID, channelID, messageID)
+func ch_sanka(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	response := sanka(s, i)
 
-	// delete role
-	message, _ := s.ChannelMessage(channelID, messageID)
-	embedDescription := []rune(message.Embeds[0].Description)
-	roleName := ""
-	if len(embedDescription) <= 9 {
-		roleName = string(embedDescription) + "..."
-	} else {
-		roleName = string(embedDescription[:9]) + "..."
-	}
-	roles, _ := s.GuildRoles(guildID)
-	for _, role := range roles {
-		if role.Name == roleName {
-			s.GuildRoleDelete(guildID, role.ID)
-		}
+	err := s.InteractionRespond(i.Interaction, response)
+	if err != nil {
+		log.Printf("Critical error occurred: %v", err)
 	}
 }
 
-func ch_sousin(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func ch_torikesi(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	response := torikesi(s, i)
+
+	err := s.InteractionRespond(i.Interaction, response)
+	if err != nil {
+		log.Printf("Critical error occurred: %v", err)
+	}
+}
+
+func ch_kanri(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	response := kanri(s, i)
+
+	err := s.InteractionRespond(i.Interaction, response)
+	if err != nil {
+		log.Printf("Critical error occurred: %v", err)
+	}
+}
+
+func ch_select(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	var response *discordgo.InteractionResponse
+	data := i.MessageComponentData()
+	messageID := i.Message.Content[46:65]
+
+	switch data.Values[0] {
+	case "syuugou":
+		response = syuugou(s, i.GuildID, i.Message.ChannelID, messageID)
+	case "sime":
+		response = sime(s, i.GuildID, i.Message.ChannelID, messageID)
+	case "mukou":
+		response = mukou(s, i.GuildID, i.Message.ChannelID, messageID)
+	}
+
+	err := s.InteractionRespond(i.Interaction, response)
+	if err != nil {
+		log.Printf("Critical error occurred: %v", err)
+	}
+}
+
+func sousin(s *discordgo.Session, i *discordgo.InteractionCreate) (response *discordgo.InteractionResponse) {
 	// send message
 	s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
 		Content: i.Message.Content,
@@ -127,21 +107,19 @@ func ch_sousin(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 		},
 	})
-	// response
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+
+	response = &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "> 送信しました。\n> 定員へ到達、または「管理/〆」ボタンから募集を締め切ることができます。\n> また「管理/集合」から参加者専用ロールでメンションを飛ばせます。\n> 企画が終了したら「管理/無効化」からロールの削除と募集の無効化をしてください。",
 			Flags:   1 << 6,
 		},
-	})
-	if err != nil {
-		log.Printf("Critical error occurred: %v", err)
 	}
+
+	return
 }
 
-func ch_sanka(s *discordgo.Session, i *discordgo.InteractionCreate) {
-
+func sanka(s *discordgo.Session, i *discordgo.InteractionCreate) (response *discordgo.InteractionResponse) {
 	simed := false
 	embed := i.Message.Embeds[0]
 
@@ -197,13 +175,7 @@ func ch_sanka(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	embedDescription := []rune(embed.Description)
-	roleName := ""
-	if len(embedDescription) <= 9 {
-		roleName = string(embedDescription) + "..."
-	} else {
-		roleName = string(embedDescription[:9]) + "..."
-	}
+	roleName := getRoleName(embed.Description)
 	roles, _ := s.GuildRoles(i.GuildID)
 	for _, role := range roles {
 		if role.Name == roleName {
@@ -217,20 +189,18 @@ func ch_sanka(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		sime(s, i.GuildID, i.Message.ChannelID, i.Message.ID)
 	}
 
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	response = &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "> 参加を申し込みました :v: ",
 			Flags:   1 << 6,
 		},
-	})
-	if err != nil {
-		log.Printf("Critical error occurred: %v", err)
 	}
+
+	return
 }
 
-func ch_torikesi(s *discordgo.Session, i *discordgo.InteractionCreate) {
-
+func torikesi(s *discordgo.Session, i *discordgo.InteractionCreate) (response *discordgo.InteractionResponse) {
 	embed := i.Message.Embeds[0]
 
 	if strings.HasPrefix(strings.Split(i.Message.Embeds[0].Fields[0].Name, " ")[2], "@") {
@@ -281,13 +251,7 @@ func ch_torikesi(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	embedDescription := []rune(embed.Description)
-	roleName := ""
-	if len(embedDescription) <= 9 {
-		roleName = string(embedDescription) + "..."
-	} else {
-		roleName = string(embedDescription[:9]) + "..."
-	}
+	roleName := getRoleName(embed.Description)
 	roles, _ := s.GuildRoles(i.GuildID)
 	for _, role := range roles {
 		if role.Name == roleName {
@@ -297,23 +261,20 @@ func ch_torikesi(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	s.ChannelMessageEditEmbed(i.ChannelID, i.Message.ID, embed)
 
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	response = &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "> 参加を取り消しました :wave: ",
 			Flags:   1 << 6,
 		},
-	})
-	if err != nil {
-		log.Printf("Critical error occurred: %v", err)
 	}
+
+	return
 }
 
-func ch_kanri(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	var err error
-
+func kanri(s *discordgo.Session, i *discordgo.InteractionCreate) (response *discordgo.InteractionResponse) {
 	if i.Member.Permissions == 4398046511103 {
-		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		response = &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "> 操作を選択してください。\n> `ID: " + i.Message.ID + "`",
@@ -355,61 +316,110 @@ func ch_kanri(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					},
 				},
 			},
-		})
+		}
 	} else {
-		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		response = &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "> 権限がありません。",
 				Flags:   1 << 6,
 			},
-		})
+		}
 	}
 
-	if err != nil {
-		log.Printf("Critical error occurred: %v", err)
-	}
+	return
 }
 
-func ch_select(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	var response *discordgo.InteractionResponse
-	data := i.MessageComponentData()
-	messageID := i.Message.Content[46:65]
-
-	switch data.Values[0] {
-	case "sime":
-		sime(s, i.GuildID, i.Message.ChannelID, messageID)
-
-		response = &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "> 締め切りました。",
-				Flags:   1 << 6,
-			},
-		}
-	case "syuugou":
-		syuugou(s, i.GuildID, i.Message.ChannelID, messageID)
-
-		response = &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "> 集合をかけました。",
-				Flags:   1 << 6,
-			},
-		}
-	case "mukou":
-		mukou(s, i.GuildID, i.Message.ChannelID, messageID)
-
-		response = &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "> 無効化しました。",
-				Flags:   1 << 6,
-			},
+func syuugou(s *discordgo.Session, guildID string, channelID string, messageID string) (response *discordgo.InteractionResponse) {
+	message, _ := s.ChannelMessage(channelID, messageID)
+	roleName := getRoleName(message.Embeds[0].Description)
+	roles, _ := s.GuildRoles(guildID)
+	for _, role := range roles {
+		if role.Name == roleName {
+			s.ChannelMessageSend(channelID, role.Mention()+" 集合！！！！！")
 		}
 	}
-	err := s.InteractionRespond(i.Interaction, response)
+
+	response = &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "> 集合をかけました。",
+			Flags:   1 << 6,
+		},
+	}
+
+	return
+}
+
+func sime(s *discordgo.Session, guildID string, channelID string, messageID string) (response *discordgo.InteractionResponse) {
+	message, err := s.ChannelMessage(channelID, messageID)
 	if err != nil {
+		log.Println(messageID)
 		log.Printf("Critical error occurred: %v", err)
 	}
+
+	embed := message.Embeds[0]
+	embed.Fields = []*discordgo.MessageEmbedField{
+		{
+			Name:   "参加者 | 〆!!",
+			Value:  embed.Fields[0].Value,
+			Inline: false,
+		},
+	}
+	embed.Color = 0xff2600
+
+	str := ""
+	s.ChannelMessageEditComplex(&discordgo.MessageEdit{
+		ID:      messageID,
+		Channel: channelID,
+		Content: &str,
+		Embeds:  []*discordgo.MessageEmbed{embed},
+		Components: []discordgo.MessageComponent{
+			discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{
+					discordgo.Button{
+						Label:    "管理",
+						Style:    discordgo.SecondaryButton,
+						Disabled: false,
+						CustomID: "ch_kanri",
+					},
+				},
+			},
+		},
+	})
+
+	response = &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "> 締め切りました。",
+			Flags:   1 << 6,
+		},
+	}
+
+	return
+}
+
+func mukou(s *discordgo.Session, guildID string, channelID string, messageID string) (response *discordgo.InteractionResponse) {
+	// sime
+	sime(s, guildID, channelID, messageID)
+
+	// delete role
+	message, _ := s.ChannelMessage(channelID, messageID)
+	roleName := getRoleName(message.Embeds[0].Description)
+	roles, _ := s.GuildRoles(guildID)
+	for _, role := range roles {
+		if role.Name == roleName {
+			s.GuildRoleDelete(guildID, role.ID)
+		}
+	}
+
+	response = &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "> 無効化しました。",
+			Flags:   1 << 6,
+		},
+	}
+
+	return
 }

@@ -49,18 +49,12 @@ func c_bosyu(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	var (
-		name        string
-		color       int   = 0
-		hoist       bool  = false
-		permission  int64 = 0
-		mentionable bool  = true
+		name        string = getRoleName(embed.Description)
+		color       int    = 0
+		hoist       bool   = false
+		permission  int64  = 0
+		mentionable bool   = true
 	)
-	embedDescription := []rune(embed.Description)
-	if len(embedDescription) <= 9 {
-		name = string(embedDescription) + "..."
-	} else {
-		name = string(embedDescription[:9]) + "..."
-	}
 	_, err := s.GuildRoleCreate(i.GuildID, &discordgo.RoleParams{
 		Name:        name,
 		Color:       &color,
