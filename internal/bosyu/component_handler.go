@@ -123,14 +123,15 @@ func sanka(s *discordgo.Session, i *discordgo.InteractionCreate) (response *disc
 	simed := false
 	embed := i.Message.Embeds[0]
 
+	members := embed.Fields[0].Value
+	if members == "ｲﾅｲﾖ" {
+		members = ""
+	}
+
+	add := "- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
+
 	if strings.HasPrefix(strings.Split(embed.Fields[0].Name, " ")[2], "@") {
 		// @ ari
-		members := embed.Fields[0].Value
-		if members == "ｲﾅｲﾖ" {
-			members = ""
-		}
-
-		add := "- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
 		atto, _ := strconv.Atoi(strings.Replace(strings.Split(embed.Fields[0].Name, " ")[2], "@", "", -1))
 
 		if !strings.Contains(members, add) {
@@ -153,12 +154,6 @@ func sanka(s *discordgo.Session, i *discordgo.InteractionCreate) (response *disc
 
 	} else {
 		// @ nasi
-		members := embed.Fields[0].Value
-		if members == "ｲﾅｲﾖ" {
-			members = ""
-		}
-
-		add := "- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
 		atto, _ := strconv.Atoi(strings.Replace(strings.Split(embed.Fields[0].Name, " ")[2], "人", "", -1))
 
 		if !strings.Contains(members, add) {
