@@ -128,7 +128,16 @@ func sanka(s *discordgo.Session, i *discordgo.InteractionCreate) (response *disc
 		members = ""
 	}
 
-	add := "- " + i.Member.User.Username + " #" + i.Member.User.Discriminator
+	// 記号入りユーザー名をエスケープ
+	// regexp.QuoteMeta は期待はずれだった
+	username := i.Member.User.Username
+	username = strings.Replace(username, "\\", "\\\\", -1)
+	username = strings.Replace(username, "~", "\\~", -1)
+	username = strings.Replace(username, "`", "\\`", -1)
+	username = strings.Replace(username, "*", "\\*", -1)
+	username = strings.Replace(username, "_", "\\_", -1)
+
+	add := "- " + username + " #" + i.Member.User.Discriminator
 
 	if strings.HasPrefix(strings.Split(embed.Fields[0].Name, " ")[2], "@") {
 		// @ ari
