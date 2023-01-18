@@ -2,7 +2,7 @@
 
 ## Specification
 
-- Go 1.19.4
+- Go 1.19.5
 
 ## Setup
 
