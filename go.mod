@@ -3,7 +3,7 @@ module github.com/shmn7iii/gigi
 go 1.19
 
 require (
-	github.com/bwmarrin/discordgo v0.26.1
+	github.com/bwmarrin/discordgo v0.27.0
 	github.com/imdario/mergo v0.3.13
 )
 
