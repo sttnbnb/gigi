@@ -7,6 +7,7 @@ import (
 
 	"github.com/shmn7iii/gigi/internal/bosyu"
 	"github.com/shmn7iii/gigi/internal/eula"
+	"github.com/shmn7iii/gigi/internal/hey"
 	"github.com/shmn7iii/gigi/internal/osiire"
 
 	"github.com/bwmarrin/discordgo"
@@ -19,6 +20,7 @@ func composeCommands() (commands []*discordgo.ApplicationCommand) {
 	commands = append(commands, bosyu.GetCommandsArray()...)
 	commands = append(commands, osiire.GetCommandsArray()...)
 	commands = append(commands, eula.GetCommandsArray()...)
+	commands = append(commands, hey.GetCommandsArray()...)
 
 	return
 }
@@ -27,6 +29,7 @@ func composeCommandHandlers() (commandHandlers map[string]func(s *discordgo.Sess
 	mergo.Merge(&commandHandlers, bosyu.GetCommandHandlersMap())
 	mergo.Merge(&commandHandlers, osiire.GetCommandHandlersMap())
 	mergo.Merge(&commandHandlers, eula.GetCommandHandlersMap())
+	mergo.Merge(&commandHandlers, hey.GetCommandHandlersMap())
 
 	return
 }
