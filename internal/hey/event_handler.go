@@ -63,15 +63,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 func getChatCompletion(inputMessage string, username string) (outputMessage string, err error) {
 	outputMessage = "⚠️ 500 Internal Server Error"
 
-	chatRequestSystemMessage := `ゲーム「モンスターハンター」のモンスターである「ギィギ」との会話をシミュレートします。
-															彼は子供です。彼の発言サンプルを以下に列挙します。
-
-															やあ！ボクの名前は「ギィギ」だよ！
-															今日はいい天気だね！
-
-															上記を参考に口調のみを模倣し、「ギィギ」になりきり回答を構築してください。
-															自己紹介の必要はありません。`
-	chatRequestSystemMessage	+= "また、会話相手の名前は" + username + "です。"
+	chatRequestSystemMessage := readSystemRoleMessage() + "また、会話相手の名前は" + username + "です。"
 
 	chatGPTResp, err := openAiGptClient.CreateChatCompletion(
 		context.Background(),
@@ -99,4 +91,19 @@ func getChatCompletion(inputMessage string, username string) (outputMessage stri
 	log.Println("CommandResponseContent: " + outputMessage)
 
 	return
+}
+
+func readSystemRoleMessage() string {
+	f, err := os.Open("assets/ChatGiGiT_SystemRoleMessage.txt")
+	if err != nil {
+		log.Fatalf("Cannot open file: %v", err)
+	}
+
+	data := make([]byte, 1024)
+	count, err := f.Read(data)
+	if err != nil {
+		log.Fatalf("Cannot read file: %v", err)
+	}
+
+	return string(data[:count])
 }

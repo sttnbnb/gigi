@@ -6,6 +6,7 @@ RUN go mod download && \
 
 FROM scratch
 WORKDIR /root/
+COPY ./assets ./assets
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /build/gigi ./
 CMD ["./gigi"]
