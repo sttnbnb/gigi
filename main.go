@@ -20,7 +20,6 @@ func composeCommands() (commands []*discordgo.ApplicationCommand) {
 	commands = append(commands, bosyu.GetCommandsArray()...)
 	commands = append(commands, osiire.GetCommandsArray()...)
 	commands = append(commands, eula.GetCommandsArray()...)
-	commands = append(commands, chatgigit.GetCommandsArray()...)
 
 	return
 }
@@ -29,7 +28,6 @@ func composeCommandHandlers() (commandHandlers map[string]func(s *discordgo.Sess
 	mergo.Merge(&commandHandlers, bosyu.GetCommandHandlersMap())
 	mergo.Merge(&commandHandlers, osiire.GetCommandHandlersMap())
 	mergo.Merge(&commandHandlers, eula.GetCommandHandlersMap())
-	mergo.Merge(&commandHandlers, chatgigit.GetCommandHandlersMap())
 
 	return
 }
