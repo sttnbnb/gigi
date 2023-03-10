@@ -16,56 +16,38 @@ var (
 )
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	authorUsername := m.Author.Username
-	mentionedGuildID := m.GuildID
-	mentionedChannelID := m.ChannelID
-	mentionedMessage := m.Message
+	if m.Author.ID == s.State.User.ID { return }
+	if !strings.HasPrefix(m.Content, botMentionString) { return }
 
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
+	s.ChannelTyping(m.ChannelID)
+	replyMessage := composeReplyMessage(m.Content, m.Author.Username)
+	s.ChannelMessageSendReply(m.ChannelID, replyMessage, &discordgo.MessageReference {
+		MessageID: m.Message.ID,
+		ChannelID: m.ChannelID,
+		GuildID: m.GuildID,
+	})
+}
 
-	if !strings.HasPrefix(m.Content, botMentionString) {
-		return
-	}
-
-	s.ChannelTyping(mentionedChannelID)
-
-	mentionedMessageContent := strings.Replace(m.Content, botMentionString, "", -1)
+func composeReplyMessage(messageContent string, username string) (replyMessage string) {
+	mentionedMessageContent := strings.Replace(messageContent, botMentionString, "", -1)
 
 	if len([]rune(mentionedMessageContent)) > 50 {
-		s.ChannelMessageSendReply(
-			m.ChannelID,
-			"文章が長すぎるよ ><\n50文字以内で話しかけてね",
-			&discordgo.MessageReference {
-				MessageID: mentionedMessage.ID,
-				ChannelID: mentionedChannelID,
-				GuildID: mentionedGuildID,
-		})
+		replyMessage = "文章が長すぎるよ ><\n50文字以内で話しかけてね"
 		return
 	}
 
-	chatCompletionOutputMessage, err := getChatCompletion(mentionedMessageContent, authorUsername)
+	replyMessage, err := getChatCompletion(mentionedMessageContent, username)
 	if err != nil {
 		log.Fatalf("Error while gpt3.5-turbo request: %v", err)
 	}
 
-	s.ChannelMessageSendReply(
-		m.ChannelID,
-		chatCompletionOutputMessage,
-		&discordgo.MessageReference {
-			MessageID: mentionedMessage.ID,
-			ChannelID: mentionedChannelID,
-			GuildID: mentionedGuildID,
-	})
+	return
 }
 
 func getChatCompletion(inputMessage string, username string) (outputMessage string, err error) {
-	outputMessage = "⚠️ 500 Internal Server Error"
-
 	chatRequestSystemMessage := readSystemRoleMessage() + "また、会話相手の名前は" + username + "です。"
 
-	chatGPTResp, err := openAiGptClient.CreateChatCompletion(
+	gptResponse, err := openAiGptClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
 			Model: openai.GPT3Dot5Turbo,
@@ -82,10 +64,12 @@ func getChatCompletion(inputMessage string, username string) (outputMessage stri
 		},
 	)
 	if err != nil {
+		outputMessage = "⚠️ 500 Internal Server Error"
 		return
 	}
 
-	outputMessage = chatGPTResp.Choices[0].Message.Content
+	outputMessage = gptResponse.Choices[0].Message.Content
+
 	log.Println("[Hey gigi]")
 	log.Println("InputContent: " + inputMessage)
 	log.Println("CommandResponseContent: " + outputMessage)
