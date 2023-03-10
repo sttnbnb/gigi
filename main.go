@@ -66,6 +66,8 @@ func main() {
 		}
 	})
 
+	s.AddHandler(hey.MessageCreate)
+
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("[gigi] ohayo.")
 	})
