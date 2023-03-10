@@ -6,8 +6,8 @@ import (
 	"os/signal"
 
 	"github.com/shmn7iii/gigi/internal/bosyu"
+	"github.com/shmn7iii/gigi/internal/chatgigit"
 	"github.com/shmn7iii/gigi/internal/eula"
-	"github.com/shmn7iii/gigi/internal/hey"
 	"github.com/shmn7iii/gigi/internal/osiire"
 
 	"github.com/bwmarrin/discordgo"
@@ -20,7 +20,7 @@ func composeCommands() (commands []*discordgo.ApplicationCommand) {
 	commands = append(commands, bosyu.GetCommandsArray()...)
 	commands = append(commands, osiire.GetCommandsArray()...)
 	commands = append(commands, eula.GetCommandsArray()...)
-	commands = append(commands, hey.GetCommandsArray()...)
+	commands = append(commands, chatgigit.GetCommandsArray()...)
 
 	return
 }
@@ -29,7 +29,7 @@ func composeCommandHandlers() (commandHandlers map[string]func(s *discordgo.Sess
 	mergo.Merge(&commandHandlers, bosyu.GetCommandHandlersMap())
 	mergo.Merge(&commandHandlers, osiire.GetCommandHandlersMap())
 	mergo.Merge(&commandHandlers, eula.GetCommandHandlersMap())
-	mergo.Merge(&commandHandlers, hey.GetCommandHandlersMap())
+	mergo.Merge(&commandHandlers, chatgigit.GetCommandHandlersMap())
 
 	return
 }
@@ -66,7 +66,7 @@ func main() {
 		}
 	})
 
-	s.AddHandler(hey.MessageCreate)
+	s.AddHandler(chatgigit.MessageCreate)
 
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("[gigi] ohayo.")

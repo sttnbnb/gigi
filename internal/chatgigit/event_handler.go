@@ -1,4 +1,4 @@
-package hey
+package chatgigit
 
 import (
 	"context"
@@ -70,7 +70,7 @@ func getChatCompletion(inputMessage string, username string) (outputMessage stri
 
 	outputMessage = gptResponse.Choices[0].Message.Content
 
-	log.Println("[Hey gigi]")
+	log.Println("[ChatGiGiT🍵]")
 	log.Println("InputContent: " + inputMessage)
 	log.Println("CommandResponseContent: " + outputMessage)
 

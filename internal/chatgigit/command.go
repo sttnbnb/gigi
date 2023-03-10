@@ -1,4 +1,4 @@
-package hey
+package chatgigit
 
 import "github.com/bwmarrin/discordgo"
 
