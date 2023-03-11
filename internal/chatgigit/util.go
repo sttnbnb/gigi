@@ -3,6 +3,8 @@ package chatgigit
 import (
 	"log"
 	"os"
+
+	openai "github.com/sashabaranov/go-openai"
 )
 
 var (
@@ -27,4 +29,18 @@ func loadChatSystemPrompt() {
 	}
 
 	chatSystemPrompt = string(data[:count])
+}
+
+// 記録用に会話をログに出力する
+func logConversation(chatInputMessages []openai.ChatCompletionMessage, chatOutputMessageContent string) {
+	log.Println("")
+	log.Println("[ChatGiGiT]")
+
+	for _, inputMessage := range chatInputMessages[1:] {
+		log.Println("Role: " + inputMessage.Role)
+		log.Println("Content: " + inputMessage.Content)
+	}
+
+	log.Println("Role: assistant")
+	log.Println(chatOutputMessageContent)
 }

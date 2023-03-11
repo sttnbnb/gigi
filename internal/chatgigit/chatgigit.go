@@ -110,6 +110,7 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
 	}
 
 	chatOutputMessageContent = openAiApiResponse.Choices[0].Message.Content
+	logConversation(chatInputMessages, chatOutputMessageContent)
+
 	return
 }
-
