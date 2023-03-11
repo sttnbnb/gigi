@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/shmn7iii/gigi/internal/bosyu"
+	"github.com/shmn7iii/gigi/internal/chatgigit"
 	"github.com/shmn7iii/gigi/internal/eula"
 	"github.com/shmn7iii/gigi/internal/osiire"
 
@@ -62,6 +63,8 @@ func main() {
 			}
 		}
 	})
+
+	s.AddHandler(chatgigit.MessageCreateEventHandler)
 
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("[gigi] ohayo.")
