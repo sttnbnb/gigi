@@ -13,6 +13,7 @@ import (
 var (
 	openAiGptClient *openai.Client = openai.NewClient(os.Getenv("OPENAI_TOKEN"))
 	botMentionString string = "<@" + os.Getenv("BOT_USER_ID") + ">"
+	botRoleMentionString string = "<@&" + os.Getenv("BOT_ROLE_ID") + ">"
 )
 
 // 返信用のMessageSendを構築

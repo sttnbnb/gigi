@@ -10,10 +10,17 @@ import (
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID { return }
 
-	// BOTへの返信、もしくはメンション付きメッセージで会話とみなす
-	if (m.Message.ReferencedMessage != nil && m.Message.ReferencedMessage.Author.ID == s.State.User.ID) || strings.HasPrefix(m.Content, botMentionString) {
-		reply(s, m)
-		return
+	// 以下で会話とみなし発火
+	// ・BOTへのメンション
+	// ・BOTロールへのメンション
+	// ・BOTへの返信（エラーメッセージを除く）
+	if strings.HasPrefix(m.Content, botMentionString) ||
+		strings.HasPrefix(m.Content, botRoleMentionString) ||
+		(m.Message.ReferencedMessage != nil &&
+			m.Message.ReferencedMessage.Author.ID == s.State.User.ID &&
+			!strings.HasPrefix(m.Message.ReferencedMessage.Content, "⚠️ **ERROR**")) {
+				reply(s, m)
+				return
 	}
 }
 
