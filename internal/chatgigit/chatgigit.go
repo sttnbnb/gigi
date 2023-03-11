@@ -2,6 +2,7 @@ package chatgigit
 
 import (
 	"context"
+	"log"
 	"os"
 	"strings"
 
@@ -89,13 +90,14 @@ func buildChatInputMessages(s *discordgo.Session, chatInputMessages *[]openai.Ch
 
 // OpenAI API へ問い合わせる
 func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, username string) (chatOutputMessageContent string) {
+	// プロンプトの構築
 	chatSystemPromptMessage := openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleSystem,
 		Content: chatSystemPrompt + "また、会話相手の名前は" + username + "です。",
 	}
 	chatInputMessages = append(chatInputMessages, chatSystemPromptMessage)
 
-	// inputMessages は降順なので反転する
+	// inputMessages は降順になっているので反転する
 	for i := 0; i < len(chatInputMessages) / 2; i++ {
     chatInputMessages[i], chatInputMessages[len(chatInputMessages) - i - 1] = chatInputMessages[len(chatInputMessages) - i - 1], chatInputMessages[i]
 	}
@@ -108,6 +110,7 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
 		},
 	)
 	if err != nil {
+		log.Printf("Error while OpenAI API request: %v", err)
 		chatOutputMessageContent = "⚠️ **ERROR**\n500 Internal Server Error"
 		return
 	}

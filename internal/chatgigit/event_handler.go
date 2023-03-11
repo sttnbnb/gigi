@@ -1,6 +1,7 @@
 package chatgigit
 
 import (
+	"log"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -26,11 +27,17 @@ func MessageCreateEventHandler(s *discordgo.Session, m *discordgo.MessageCreate)
 
 func reply(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// 「入力中...」の表示
-	s.ChannelTyping(m.ChannelID)
+	err := s.ChannelTyping(m.ChannelID)
+	if err != nil {
+		log.Printf("Critical error occurred: %v", err)
+	}
 
 	// 返信内容の生成
 	replyMessageSend := buildReplyMessageSend(s, m)
 
 	// 返信する
-	s.ChannelMessageSendComplex(m.ChannelID, replyMessageSend)
+	_, err = s.ChannelMessageSendComplex(m.ChannelID, replyMessageSend)
+	if err != nil {
+		log.Printf("Critical error occurred: %v", err)
+	}
 }
