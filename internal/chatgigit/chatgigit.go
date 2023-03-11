@@ -107,6 +107,7 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
 		openai.ChatCompletionRequest{
 			Model: openai.GPT3Dot5Turbo,
 			Messages: chatInputMessages,
+			Temperature: 0.7,
 		},
 	)
 	if err != nil {
