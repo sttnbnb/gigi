@@ -2,7 +2,6 @@ package chatgigit
 
 import (
 	"context"
-	"log"
 	"os"
 	"strings"
 
@@ -12,17 +11,26 @@ import (
 
 var (
 	openAiGptClient *openai.Client = openai.NewClient(os.Getenv("OPENAI_TOKEN"))
-	botMentionString string = "<@" + os.Getenv("BOT_USER_ID") + ">"
+	botUserMentionString string = "<@" + os.Getenv("BOT_USER_ID") + ">"
 	botRoleMentionString string = "<@&" + os.Getenv("BOT_ROLE_ID") + ">"
 )
 
 // 返信用のMessageSendを構築
 func buildReplyMessageSend(s *discordgo.Session, m *discordgo.MessageCreate) (replyMessageSend *discordgo.MessageSend) {
 	var replyMessageContent string
+	replyMessageReference := &discordgo.MessageReference {
+		MessageID: m.Message.ID,
+		ChannelID: m.ChannelID,
+		GuildID: m.GuildID,
+	}
 
 	// 50文字を超える場合はリジェクトする
 	if len([]rune(m.Message.Content)) > 50 {
 		replyMessageContent = "⚠️ **ERROR**\n文章が長すぎるよ ><\n50文字以内で話しかけてね"
+		replyMessageSend = &discordgo.MessageSend{
+			Content: replyMessageContent,
+			Reference: replyMessageReference,
+		}
 		return
 	}
 
@@ -33,23 +41,18 @@ func buildReplyMessageSend(s *discordgo.Session, m *discordgo.MessageCreate) (re
 	// 累計の会話が５往復を超える場合はリジェクトする
 	if len(chatInputMessages) > 10 {
 		replyMessageContent = "⚠️ **ERROR**\n連続でできる会話は５往復までだよ ><\n新しくメンションして話しかけてね"
+		replyMessageSend = &discordgo.MessageSend{
+			Content: replyMessageContent,
+			Reference: replyMessageReference,
+		}
 		return
 	}
 
 	// OpenAIから返答を取得
-	replyMessageContent, err := getChatCompletion(chatInputMessages, m.Author.Username)
-	if err != nil {
-		log.Fatalf("Error while gpt3.5-turbo request: %v", err)
-		replyMessageContent = "⚠️ **ERROR**\n500 Internal Server Error"
-	}
-
+	replyMessageContent = getChatCompletion(chatInputMessages, m.Author.Username)
 	replyMessageSend = &discordgo.MessageSend{
 		Content: replyMessageContent,
-		Reference: &discordgo.MessageReference {
-			MessageID: m.Message.ID,
-			ChannelID: m.ChannelID,
-			GuildID: m.GuildID,
-		},
+		Reference: replyMessageReference,
 	}
 
 	return
@@ -57,7 +60,7 @@ func buildReplyMessageSend(s *discordgo.Session, m *discordgo.MessageCreate) (re
 
 // リクエスト用の[]openai.ChatCompletionMessageを再帰的に構築する
 func buildChatInputMessages(s *discordgo.Session, chatInputMessages *[]openai.ChatCompletionMessage, originMessage *discordgo.Message) {
-	originMessageContent := strings.Replace(originMessage.Content, botMentionString, "", -1)
+	originMessageContent := strings.Replace(originMessage.Content, botUserMentionString, "", -1)
 
 	// BOT or UserでRoleを分ける
 	var role string
@@ -85,7 +88,7 @@ func buildChatInputMessages(s *discordgo.Session, chatInputMessages *[]openai.Ch
 }
 
 // OpenAI API へ問い合わせる
-func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, username string) (chatOutputMessageContent string, err error) {
+func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, username string) (chatOutputMessageContent string) {
 	chatSystemPromptMessage := openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleSystem,
 		Content: chatSystemPrompt + "また、会話相手の名前は" + username + "です。",
@@ -97,7 +100,7 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
     chatInputMessages[i], chatInputMessages[len(chatInputMessages) - i - 1] = chatInputMessages[len(chatInputMessages) - i - 1], chatInputMessages[i]
 	}
 
-	openAiApiResponse, err := openAiGptClient.CreateChatCompletion(
+	openAIAPIResponse, err := openAiGptClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
 			Model: openai.GPT3Dot5Turbo,
@@ -105,11 +108,11 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
 		},
 	)
 	if err != nil {
-		chatOutputMessageContent = "⚠️ 500 Internal Server Error"
+		chatOutputMessageContent = "⚠️ **ERROR**\n500 Internal Server Error"
 		return
 	}
 
-	chatOutputMessageContent = openAiApiResponse.Choices[0].Message.Content
+	chatOutputMessageContent = openAIAPIResponse.Choices[0].Message.Content
 	logConversation(chatInputMessages, chatOutputMessageContent)
 
 	return

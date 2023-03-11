@@ -64,7 +64,7 @@ func main() {
 		}
 	})
 
-	s.AddHandler(chatgigit.MessageCreate)
+	s.AddHandler(chatgigit.MessageCreateEventHandler)
 
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("[gigi] ohayo.")

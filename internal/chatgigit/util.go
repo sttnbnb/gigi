@@ -17,7 +17,7 @@ func init() {
 
 // 外部に用意した設定ファイルを読み込む
 func loadChatSystemPrompt() {
-	f, err := os.Open("assets/chat_gigit/chat_system_prompt.txt")
+	f, err := os.Open("assets/chatgigit/chat_system_prompt.txt")
 	if err != nil {
 		log.Fatalf("Cannot open file: %v", err)
 	}
@@ -41,6 +41,6 @@ func logConversation(chatInputMessages []openai.ChatCompletionMessage, chatOutpu
 		log.Println("Content: " + inputMessage.Content)
 	}
 
-	log.Println("Role: assistant")
-	log.Println(chatOutputMessageContent)
+	log.Println("Role: " + openai.ChatMessageRoleAssistant)
+	log.Println("Content: " + chatOutputMessageContent)
 }
