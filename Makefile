@@ -5,7 +5,7 @@ ENV_FILE=.env
 APP_NAME=gigi
 
 docker/run: docker/rm docker/build
-	docker run -d --name $(APP_NAME) --env-file=$(ENV_FILE) --restart=always gigi:latest
+	docker run -d --name $(APP_NAME) --env-file=$(ENV_FILE) --restart=always $(APP_NAME):latest
 
 docker/start:
 	docker start $(APP_NAME)
