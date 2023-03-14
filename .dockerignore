@@ -1,3 +1,9 @@
 .git
 .env
+.env.sample
+.gitignore
+LICENSE
+Makefile
+README.md
+
 vendor/
