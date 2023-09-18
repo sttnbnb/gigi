@@ -2,7 +2,7 @@
 
 ## Specification
 
-- Go 1.20.0
+- Go 1.20
 
 ## Setup
 
@@ -10,10 +10,7 @@
 > BOT requires `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`.
 
 ```bash
-# Install make, docker and write .env
-$ bash script/setup.sh
-
-# create docker container
+# create docker container (build included)
 $ make docker/run
 ```
 
