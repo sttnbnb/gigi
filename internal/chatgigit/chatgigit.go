@@ -59,11 +59,10 @@ func buildReplyMessageSend(s *discordgo.Session, m *discordgo.MessageCreate) (re
 	return
 }
 
-// リクエスト用の[]openai.ChatCompletionMessageを再帰的に構築する
+// 返信を再帰的に遡り[]openai.ChatCompletionMessageを構築する
 func buildChatInputMessages(s *discordgo.Session, chatInputMessages *[]openai.ChatCompletionMessage, originMessage *discordgo.Message) {
 	originMessageContent := strings.Replace(originMessage.Content, botUserMentionString, "", -1)
 
-	// BOT or UserでRoleを分ける
 	var role string
 	if originMessage.Author.ID == s.State.User.ID {
 		role = openai.ChatMessageRoleAssistant
@@ -76,12 +75,11 @@ func buildChatInputMessages(s *discordgo.Session, chatInputMessages *[]openai.Ch
 		Content: originMessageContent,
 	})
 
-	// 返信先がない=先頭のメッセージならば抜ける
 	if originMessage.ReferencedMessage == nil {
 		return
 	}
 
-	// message.ReferencedMessage では ReferencedMessage フィールドが取得されないため
+	// message.ReferencedMessage では取得した ReferencedMessage の ReferencedMessage フィールドが取得されないため
 	// ChannelMessage で明示的にメッセージを取得する
 	// see: https://pkg.go.dev/github.com/bwmarrin/discordgo#Message
 	referencedMessage, _ := s.ChannelMessage(originMessage.ChannelID, originMessage.ReferencedMessage.ID)
@@ -102,7 +100,7 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
 		chatInputMessages[i], chatInputMessages[len(chatInputMessages)-i-1] = chatInputMessages[len(chatInputMessages)-i-1], chatInputMessages[i]
 	}
 
-	openAIAPIResponse, err := openAiGptClient.CreateChatCompletion(
+	res, err := openAiGptClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
 			Model:       openai.GPT3Dot5Turbo,
@@ -112,11 +110,11 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
 	)
 	if err != nil {
 		log.Printf("Error while OpenAI API request: %v", err)
-		chatOutputMessageContent = "⚠️ **ERROR**\n500 Internal Server Error" + err.Error()
+		chatOutputMessageContent = "⚠️ **ERROR** [500 Internal Server Error]\n" + err.Error()
 		return
 	}
 
-	chatOutputMessageContent = openAIAPIResponse.Choices[0].Message.Content
+	chatOutputMessageContent = res.Choices[0].Message.Content
 	logConversation(chatInputMessages, chatOutputMessageContent)
 
 	return
