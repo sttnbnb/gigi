@@ -30,18 +30,24 @@ func c_generateeula(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	agreeLabel := i.ApplicationCommandData().Options[1].StringValue()
 	disagreeLabel := i.ApplicationCommandData().Options[2].StringValue()
 
-	s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
+	_, err = s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
 		Content: eulaText,
 		Components: []discordgo.MessageComponent{
 			discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{
 					discordgo.Button{
+						Emoji: discordgo.ComponentEmoji{
+							Name: "😁",
+						},
 						Label:    agreeLabel,
 						Style:    discordgo.PrimaryButton,
 						Disabled: false,
 						CustomID: "ch_agree",
 					},
 					discordgo.Button{
+						Emoji: discordgo.ComponentEmoji{
+							Name: "😑",
+						},
 						Label:    disagreeLabel,
 						Style:    discordgo.DangerButton,
 						Disabled: false,
@@ -51,6 +57,9 @@ func c_generateeula(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 		},
 	})
+	if err != nil {
+		log.Printf("Critical error occurred: %v", err)
+	}
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
