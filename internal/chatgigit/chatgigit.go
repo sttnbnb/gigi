@@ -112,7 +112,7 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
 	)
 	if err != nil {
 		log.Printf("Error while OpenAI API request: %v", err)
-		chatOutputMessageContent = "⚠️ **ERROR**\n500 Internal Server Error"
+		chatOutputMessageContent = "⚠️ **ERROR**\n500 Internal Server Error" + err.Error()
 		return
 	}
 
