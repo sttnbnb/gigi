@@ -11,25 +11,25 @@ import (
 )
 
 var (
-	openAiGptClient *openai.Client = openai.NewClient(os.Getenv("OPENAI_TOKEN"))
-	botUserMentionString string = "<@" + os.Getenv("BOT_USER_ID") + ">"
-	botRoleMentionString string = "<@&" + os.Getenv("BOT_ROLE_ID") + ">"
+	openAiGptClient      *openai.Client = openai.NewClient(os.Getenv("OPENAI_TOKEN"))
+	botUserMentionString string         = "<@" + os.Getenv("BOT_USER_ID") + ">"
+	botRoleMentionString string         = "<@&" + os.Getenv("BOT_ROLE_ID") + ">"
 )
 
 // 返信用のMessageSendを構築
 func buildReplyMessageSend(s *discordgo.Session, m *discordgo.MessageCreate) (replyMessageSend *discordgo.MessageSend) {
 	var replyMessageContent string
-	replyMessageReference := &discordgo.MessageReference {
+	replyMessageReference := &discordgo.MessageReference{
 		MessageID: m.Message.ID,
 		ChannelID: m.ChannelID,
-		GuildID: m.GuildID,
+		GuildID:   m.GuildID,
 	}
 
 	// 50文字を超える場合はリジェクトする
 	if len([]rune(m.Message.Content)) > 50 {
 		replyMessageContent = "⚠️ **ERROR**\n文章が長すぎるよ ><\n50文字以内で話しかけてね"
 		replyMessageSend = &discordgo.MessageSend{
-			Content: replyMessageContent,
+			Content:   replyMessageContent,
 			Reference: replyMessageReference,
 		}
 		return
@@ -43,7 +43,7 @@ func buildReplyMessageSend(s *discordgo.Session, m *discordgo.MessageCreate) (re
 	if len(chatInputMessages) > 10 {
 		replyMessageContent = "⚠️ **ERROR**\n連続でできる会話は５往復までだよ ><\n新しくメンションして話しかけてね"
 		replyMessageSend = &discordgo.MessageSend{
-			Content: replyMessageContent,
+			Content:   replyMessageContent,
 			Reference: replyMessageReference,
 		}
 		return
@@ -52,7 +52,7 @@ func buildReplyMessageSend(s *discordgo.Session, m *discordgo.MessageCreate) (re
 	// OpenAIから返答を取得
 	replyMessageContent = getChatCompletion(chatInputMessages, m.Author.Username)
 	replyMessageSend = &discordgo.MessageSend{
-		Content: replyMessageContent,
+		Content:   replyMessageContent,
 		Reference: replyMessageReference,
 	}
 
@@ -72,7 +72,7 @@ func buildChatInputMessages(s *discordgo.Session, chatInputMessages *[]openai.Ch
 	}
 
 	*chatInputMessages = append(*chatInputMessages, openai.ChatCompletionMessage{
-		Role: role,
+		Role:    role,
 		Content: originMessageContent,
 	})
 
@@ -98,15 +98,15 @@ func getChatCompletion(chatInputMessages []openai.ChatCompletionMessage, usernam
 	chatInputMessages = append(chatInputMessages, chatSystemPromptMessage)
 
 	// inputMessages は降順になっているので反転する
-	for i := 0; i < len(chatInputMessages) / 2; i++ {
-    chatInputMessages[i], chatInputMessages[len(chatInputMessages) - i - 1] = chatInputMessages[len(chatInputMessages) - i - 1], chatInputMessages[i]
+	for i := 0; i < len(chatInputMessages)/2; i++ {
+		chatInputMessages[i], chatInputMessages[len(chatInputMessages)-i-1] = chatInputMessages[len(chatInputMessages)-i-1], chatInputMessages[i]
 	}
 
 	openAIAPIResponse, err := openAiGptClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
-			Messages: chatInputMessages,
+			Model:       openai.GPT3Dot5Turbo,
+			Messages:    chatInputMessages,
 			Temperature: 0.7,
 		},
 	)
